@@ -101,7 +101,6 @@ getgenv().Depart = {
     }
 }
 
-
 --[[
 
 local Arguments = loadstring(game:HttpGet("https://raw.githubusercontent.com/hojixv/Argument.lua/refs/heads/main/Arguments.lua"))()
@@ -242,6 +241,8 @@ local function getArgument()
 
     return eventName, args
 end
+
+print 'Detection #1'
 
 local function getVelocity(player, partName)
     local part = player.Character and player.Character:FindFirstChild(partName)
@@ -436,10 +437,6 @@ local function UpdateFOV()
     end
 end
 
-RunService.RenderStepped:Connect(function()
-    UpdateFOV()
-end)
-
 local function WallCheck(destination, ignore)
     if not Depart.Miscellaneous.Checks.WallCheck then
         return true
@@ -460,6 +457,59 @@ local function Death(Plr)
     return false
 end
 
+function DetectionFunction(detection)
+    if detection then
+        print('Arguments Detected')
+    end
+end
+
+DetectionFunction(true) -- global )_<
+
+print (game.PlaceId)
+
+local function getEventName()
+    local placeIds = {
+        [2788229376] = "UpdateMousePosI2",
+        [7213786345] = "UpdateMousePosI2",
+        [16033173781] = "UpdateMousePosI2",
+        [9825515356] = "MousePosUpdate",
+        [17897702920] = "UpdateMousePos",
+        [15644861772] = "UpdateMousePos",
+        [125825216602676] = "MOUSE",
+        [122094140167766] = "MOUSE",
+        [138831788033519] = "MOUSE", 
+        [15186202290] = "MOUSE",
+    }
+    return placeIds[game.PlaceId] or "UpdateMousePosI2"
+end
+
+local targetPlaceId = 138831788033519
+local targetPlaceId = 15186202290
+local targetPlaceId = 122094140167766
+local targetPlaceId = 125825216602676
+
+if game.PlaceId == targetPlaceId then
+    print("Detected target place ID: " .. targetPlaceId)
+else
+    print("Argument Detected")
+end
+
+
+local function MainEvents()
+    local eventNames = {
+        "MainEvent",
+        "MAINEVENT",
+        "Bullets",
+        ".gg/untitledhood",
+    }
+    for _, child in pairs(game.ReplicatedStorage:GetChildren()) do
+        for _, eventName in pairs(eventNames) do
+            if child.Name == eventName then
+                return child
+            end
+        end
+    end
+end
 
 local function getClosestChar()
     local target, closestDist = nil, math.huge
@@ -495,46 +545,6 @@ local function getClosestChar()
     return target
 end
 
-function DetectionFunction(detection)
-    if detection then
-        print('Arguments Detected')
-    end
-end
-
-DetectionFunction(true) -- global )_<
-
-print (game.PlaceId)
-
-local function getEventName()
-    local placeIds = {
-        [2788229376] = "UpdateMousePosI2",
-        [7213786345] = "UpdateMousePosI2",
-        [16033173781] = "UpdateMousePosI2",
-        [9825515356] = "MousePosUpdate",
-        [17897702920] = "UpdateMousePos",
-        [15644861772] = "UpdateMousePos",
-        [17836920497] = "Mouse",
-        
-    }
-    return placeIds[game.PlaceId] or "UpdateMousePosI2"
-end
-
-local function MainEvents()
-    local eventNames = {
-        "MainEvent",
-        "MAINEVENT",
-        "Bullets",
-        ".gg/untitledhood",
-    }
-    for _, child in pairs(game.ReplicatedStorage:GetChildren()) do
-        for _, eventName in pairs(eventNames) do
-            if child.Name == eventName then
-                return child
-            end
-        end
-    end
-end
-
 local function connectToolActivation(tool)
     if tool:IsA("Tool") then
         local debounce = false
@@ -555,21 +565,40 @@ local function connectToolActivation(tool)
     end
 end
 
+local function setupToolConnections()
+    for _, tool in pairs(Client.Backpack:GetChildren()) do
+        connectToolActivation(tool)
+    end
+
+    Client.Backpack.ChildAdded:Connect(function(tool)
+        connectToolActivation(tool)
+    end)
+end
+
+local function handleRespawn()
+    task.wait(1)
+
+    Cam = workspace.CurrentCamera
+    Mouse = Client:GetMouse()
+
+    setupToolConnections()
+
+    FOV.Thickness = fovSettings.Thickness
+    FOV.Color = fovSettings.Color
+    FOV.Filled = fovSettings.Filled
+
+    RunService.RenderStepped:Connect(function()
+        UpdateFOV()
+    end)
+end
+
 local function setupRespawnHandling()
     Client.CharacterAdded:Connect(function()
-        task.wait(1)
         handleRespawn()
     end)
 end
 
-for _, tool in pairs(Client.Backpack:GetChildren()) do
-    connectToolActivation(tool)
-end
-
-Client.Backpack.ChildAdded:Connect(function(tool)
-    connectToolActivation(tool)
-end)
-
+handleRespawn()
 setupRespawnHandling()
 
-print 'Detection'
+print 'Detection #2'
