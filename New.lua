@@ -483,13 +483,15 @@ local function getEventName()
     return placeIds[game.PlaceId] or "UpdateMousePosI2"
 end
 
-local targetPlaceId = 138831788033519
-local targetPlaceId = 15186202290
-local targetPlaceId = 122094140167766
-local targetPlaceId = 125825216602676
+print 'Detection #2'
 
-if game.PlaceId == targetPlaceId then
-    print("Detected target place ID: " .. targetPlaceId)
+local Argument = 138831788033519
+local Argument = 15186202290
+local Argument = 122094140167766
+local Argument = 125825216602676
+
+if game.PlaceId == Argument then
+    print("Detected target place ID: " .. Argument)
 else
     print("Argument Detected")
 end
@@ -601,4 +603,4 @@ end
 handleRespawn()
 setupRespawnHandling()
 
-print 'Detection #2'
+print 'Detection #3 Script Loaded'
