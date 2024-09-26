@@ -495,9 +495,15 @@ local function getClosestChar()
     return target
 end
 
-local Arguments = loadstring(game:HttpGet("https://raw.githubusercontent.com/hojixv/Argument.lua/refs/heads/main/Arguments.lua"))()
+function DetectionFunction(detection)
+    if detection then
+        print('Arguments Detected')
+    end
+end
 
-print 'Arguments Detected'
+DetectionFunction(true) -- global )_<
+
+print (game.PlaceId)
 
 local function getEventName()
     local placeIds = {
@@ -505,7 +511,10 @@ local function getEventName()
         [7213786345] = "UpdateMousePosI2",
         [16033173781] = "UpdateMousePosI2",
         [9825515356] = "MousePosUpdate",
+        [17897702920] = "UpdateMousePos",
+        [15644861772] = "UpdateMousePos",
         [17836920497] = "Mouse",
+        
     }
     return placeIds[game.PlaceId] or "UpdateMousePosI2"
 end
