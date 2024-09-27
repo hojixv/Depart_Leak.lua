@@ -442,8 +442,8 @@ local function handleMacroSpeedGlitch()
                                 nextActionTime = tick() + interval
                             end
                             runService.Heartbeat:Wait()
-                        until not settings.Enabled -- Changed Activate to Enabled
-
+                        until not settings.Enabled -- handling (.)_(.)
+                        --
                     elseif settings.Mode == "ThirdPerson" then
                         local actionInterval = interval / 4
                         local nextActionTime = tick() + actionInterval
@@ -497,7 +497,7 @@ MainDot.Visible = false
 MainDot.Transparency = 0
 MainDot.Radius = 0.1
 MainDot.Thickness = 0.1
-MainDot.Color = DotFOV.Color -- Update color from DotFOV
+MainDot.Color = DotFOV.Color
 
 local MainFOV = Drawing.new("Circle")
 MainFOV.Visible = DotFOV.Visible
