@@ -1,5 +1,3 @@
---// Took Around 2 days
-
 getgenv().Depart = {
     ['Intro'] = {
         ['Activated'] = false,
@@ -16,7 +14,7 @@ getgenv().Depart = {
         ['Activated'] = true,
         ['Mode'] = "FirstPerson",
         ['Speed'] = 0.01,
-        ['Enabled'] = false, 
+        ['Enabled'] = false
     },
     ['Fighting'] = {
         ['Silent'] = {
@@ -36,12 +34,23 @@ getgenv().Depart = {
                 ['Color'] = Color3.fromRGB(255, 255, 255),
                 ['Thickness'] = 0.2,
                 ['Filled'] = false
+            },
+            ['DotFOV'] = {
+                ['Visible'] = false,
+                ['ShowMiniDot'] = true,
+                ['Rainbow'] = true,
+                ['Num_Dots'] = 100,
+                ['Dotted_Size'] = 1,
+                ['Radius'] = 200,
+                ['Transparency'] = 1,
+                ['Thickness'] = 0.5,
+                ['Color'] = Color3.fromRGB(255, 255, 255)
             }
         },
         ['Aiming'] = {
             ['ClosestBodyPart'] = true,
             ['Activate'] = true,
-            ['Key'] = "C",
+            ['Key'] = 'C',
             ['TargetParts'] = 'HumanoidRootPart',
             ['Prediction'] = 0.014556,
             ['CameraSmoothness'] = 0.067889
@@ -97,6 +106,18 @@ getgenv().Depart = {
         },
         ['Checks'] = {
             ['WallCheck'] = false
+        },
+        ['Turn'] = {
+            ['Enabled'] = true,
+            ['Speed'] = 2500,
+            ['Smoothness'] = 1,
+            ['Direction'] = 'N',
+            ['Directions'] = {
+                ['N'] = 0,
+                ['E'] = 90,
+                ['S'] = 180,
+                ['W'] = 270
+            }
         }
     }
 }
@@ -108,6 +129,7 @@ local Arguments = loadstring(game:HttpGet("https://raw.githubusercontent.com/hoj
 --]]
 
 --[[
+
 (Use only if needed)
 
     local hojixv = getrawmetatable(game)
@@ -142,6 +164,56 @@ end
 if not game:IsLoaded() then
     game.Loaded:Wait()
 end
+
+-- Global
+print 'Global'
+
+-- V #3
+local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
+local Camera = workspace.CurrentCamera
+
+local Toggle = false
+local Speed = getgenv().Depart['Miscellaneous']['Turn']['Speed'] 
+local SpinEnabled = getgenv().Depart['Miscellaneous']['Turn']['Enabled'] 
+local Direction = getgenv().Depart['Miscellaneous']['Turn']['Direction'] 
+
+-- Pressing
+local function OnKeyPress(Input, GameProcessedEvent)
+    if not GameProcessedEvent then
+        local keyToToggle = Enum.KeyCode[Direction]
+        if keyToToggle and Input.KeyCode == keyToToggle then
+            Toggle = not Toggle
+        end
+    end
+end
+
+UserInputService.InputBegan:Connect(OnKeyPress)
+
+local LastRenderTime = 0
+local FullCircleRotation = 2 * math.pi
+local TotalRotation = 0
+
+-- Main #1
+local function RotateCamera()
+    if Toggle and SpinEnabled then
+        local CurrentTime = tick()
+        local TimeDelta = math.min(CurrentTime - LastRenderTime, 0.01)
+        LastRenderTime = CurrentTime
+
+        local Rotation = CFrame.fromAxisAngle(Vector3.new(0, 1, 0), math.rad(Speed * TimeDelta))
+        Camera.CFrame = Camera.CFrame * Rotation
+
+        TotalRotation = TotalRotation + math.rad(Speed * TimeDelta)
+        
+        if TotalRotation >= FullCircleRotation then
+            Toggle = false 
+            TotalRotation = 0 
+        end
+    end
+end
+
+RunService.RenderStepped:Connect(RotateCamera)
 
 -- V
 local runService = game:GetService("RunService")
@@ -412,17 +484,95 @@ end
 
 handleMacroSpeedGlitch()
 
+local DotFOV = getgenv().Depart.Fighting.Silent.DotFOV
+
+local RunService = game:GetService('RunService')
+local Players = game:GetService("Players")
+local Client = Players.LocalPlayer
+local Mouse = Client:GetMouse()
+local GuiS = game:GetService("GuiService")
+
+local MainDot = Drawing.new("Circle")
+MainDot.Visible = false
+MainDot.Transparency = 0
+MainDot.Radius = 0.1
+MainDot.Thickness = 0.1
+MainDot.Color = DotFOV.Color -- Update color from DotFOV
+
+local MainFOV = Drawing.new("Circle")
+MainFOV.Visible = DotFOV.Visible
+MainFOV.Transparency = DotFOV.Transparency
+MainFOV.Radius = DotFOV.Radius
+MainFOV.Thickness = DotFOV.Thickness
+MainFOV.Color = DotFOV.Color
+
+local NumDots = DotFOV.Num_Dots
+local DottedSize = DotFOV.Dotted_Size
+local angleIncrement = 360 / NumDots
+local MiniDots = {}
+
+local function getColorFromRainbow(offset)
+    local r = math.sin(offset * math.pi) * 127 + 128
+    local g = math.sin(offset * math.pi + 2 * math.pi / 3) * 127 + 128
+    local b = math.sin(offset * math.pi + 4 * math.pi / 3) * 127 + 128
+    return Color3.fromRGB(r, g, b)
+end
+
+for i = 1, NumDots do
+    local MiniDot = Drawing.new("Circle")
+    MiniDot.Visible = DotFOV.ShowMiniDot
+    MiniDot.Filled = true
+    MiniDot.Transparency = 1
+    MiniDot.Radius = DottedSize
+    MiniDot.Thickness = 1
+    table.insert(MiniDots, MiniDot)
+end
+
+RunService.Heartbeat:Connect(function()
+    MainFOV.Visible = DotFOV.Visible
+    MainFOV.Transparency = DotFOV.Transparency
+    MainFOV.Radius = DotFOV.Radius
+    MainFOV.Thickness = DotFOV.Thickness
+    MainFOV.Color = DotFOV.Color
+    
+    local guiInsetY = GuiS:GetGuiInset().Y
+    MainDot.Position = Vector2.new(Mouse.X, Mouse.Y + guiInsetY)
+    MainFOV.Position = Vector2.new(Mouse.X, Mouse.Y + guiInsetY)
+    local Radius = DotFOV.Radius
+    
+    for i, miniDot in ipairs(MiniDots) do
+        local angle = math.rad((i - 1) / NumDots * 360)
+        local offsetX = math.cos(angle) * Radius
+        local offsetY = math.sin(angle) * Radius
+        miniDot.Position = MainDot.Position + Vector2.new(offsetX, offsetY)
+        
+        if DotFOV.Rainbow then
+            miniDot.Color = getColorFromRainbow(i / NumDots)
+        else
+            miniDot.Color = DotFOV.Color
+        end
+    end
+end)
+
+spawn(function()
+    while DotFOV.Rainbow do
+        for i = 1, 50 do
+            DotFOV.Num_Dots = i
+            wait(math.random(1, 2) / 100)
+        end
+    end
+end)
+
+-- V #2
 local Inset = game:GetService("GuiService"):GetGuiInset().Y
 local Mouse = game.Players.LocalPlayer:GetMouse()
 local Client = game.Players.LocalPlayer
 local Cam = workspace.CurrentCamera
 local RunService = game:GetService("RunService")
 
---// FOV Circle Drawing
 local FOV = Drawing.new("Circle")
 local fovSettings = Depart.Fighting.Silent.fovSettings
 
--- Apply FOV settings
 FOV.Thickness = fovSettings.Thickness
 FOV.Color = fovSettings.Color
 FOV.Filled = fovSettings.Filled
