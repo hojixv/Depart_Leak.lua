@@ -16,64 +16,61 @@ getgenv().Depart = {
         ['Speed'] = 0.01,
         ['Enabled'] = false
     },
-    ['Fighting'] = {
-        ['Silent'] = {
-            ['Activated'] = true,
-            ['NearestPoint'] = true,
-            ['Tune'] = 0.1,
-            ['Prediction'] = 0.1243,
-            ['MultipleParts'] = {"HumanoidRootPart", "Head", "Torso"},
-            ['Anti_Groundshots'] = true,
-            ['Anti_Curve'] = true,
-            ['KOcheck'] = true,
-            ['MaxAngle'] = 60,
-            ['fovSettings'] = {
-                ['FovRadius'] = 500,
-                ['Activated'] = true,
-                ['Visible'] = true,
-                ['Color'] = Color3.fromRGB(255, 255, 255),
-                ['Thickness'] = 0.2,
-                ['Filled'] = false
-            },
-            ['DotFOV'] = {
-                ['Visible'] = false,
-                ['ShowMiniDot'] = true,
-                ['Rainbow'] = true,
-                ['Num_Dots'] = 100,
-                ['Dotted_Size'] = 1,
-                ['Radius'] = 200,
-                ['Transparency'] = 1,
-                ['Thickness'] = 0.5,
-                ['Color'] = Color3.fromRGB(255, 255, 255)
-            }
+    ['Aiming'] = {
+        ['Activate'] = true,
+        ['Key'] = 'C',
+        ['TargetParts'] = 'HumanoidRootPart',
+        ['Prediction'] = 0.014556,
+        ['CameraSmoothness'] = 0.067889
+    },
+    ['AimingAirSection'] = {
+        ['ActivateAirBornePrediction'] = true,
+        ['AirBorneParts'] = 'Head',
+        ['AirBorneSmoothness'] = 0.078856,
+        ['AirShotPrediction'] = 0.1255
+    },
+    ['AimbotShake'] = {
+        ['Activated'] = false,
+        ['Values'] = {
+            ['Number'] = 10
+        }
+    },
+    ['AimPointMultipleHitParts'] = {
+        ['Activated'] = true,
+        ['Multi'] = {'Head', 'HumanoidRootPart', 'UpperTorso', 'LowerTorso'}
+    },
+    ['AimPoint'] = {
+        ['Activated'] = false,
+        ['Prediction'] = 0.12445,
+        ['Parts'] = 'HumanoidRootPart',
+        ['AirBorneParts'] = 'Head'
+    },
+    ['Offsets'] = {
+        ['Jump'] = {0.12},
+        ['Fall'] = {-0.12}
+    },
+    ['Silent'] = {
+        ['Activated'] = true,
+        ['Prediction'] = 0.1243,
+        ['HitParts'] = {"HumanoidRootPart", "Head", "Torso"},
+        ['KOcheck'] = true,
+        ['Closetpart'] = false,
+        ['AntiGroundShots'] = {
+            ['Enabled'] = false,
+            ['Value'] = 4
         },
-        ['Aiming'] = {
-            ['ClosestBodyPart'] = true,
-            ['Activate'] = true,
-            ['Key'] = 'C',
-            ['TargetParts'] = 'HumanoidRootPart',
-            ['Prediction'] = 0.014556,
-            ['CameraSmoothness'] = 0.067889
+        ['AntiCurve'] = {
+            ['Enabled'] = false,
+            ['Values'] = 5
         },
-        ['AimingAirSection'] = {
-            ['ActivateAirBornePrediction'] = true,
-            ['AirBorneParts'] = 'Head',
-            ['AirBorneSmoothness'] = 0.078856,
-            ['AirShotPrediction'] = 0.1255
-        },
-        ['AimPointMultipleHitParts'] = {
-            ['Activated'] = true,
-            ['Multi'] = {'Head', 'HumanoidRootPart', 'UpperTorso', 'LowerTorso'}
-        },
-        ['AimPoint'] = {
-            ['Activated'] = false,
-            ['Prediction'] = 0.12445,
-            ['Parts'] = 'HumanoidRootPart',
-            ['AirBorneParts'] = 'Head'
-        },
-        ['Offsets'] = {
-            ['Jump'] = {0.12},
-            ['Fall'] = {-0.12}
+        ['Fov'] = {
+            ['FovType'] = "Mouse",
+            ['Thickness'] = 0.2,
+            ['Radius'] = 500,
+            ['Color'] = Color3.fromRGB(255, 255, 255),
+            ['Transparency'] = 1,
+            ['Filled'] = false,
+            ['Visible'] = true
         }
     },
     ['Triggerbot'] = {
@@ -83,6 +80,10 @@ getgenv().Depart = {
         ['Radius'] = 25,
         ['UseDelay'] = true,
         ['Delay'] = 0.05,
+        ['Cooldown 1'] = 0.1275,
+        ['Cooldown 2'] = 0.12,
+        ['Interval'] = 1,
+        ['Tolerance'] = 1,
         ['WhitelistedGuns'] = {
             '[Revolver]',
             '[DoubleBarrel]',
@@ -111,7 +112,7 @@ getgenv().Depart = {
             ['Enabled'] = true,
             ['Speed'] = 2500,
             ['Smoothness'] = 1,
-            ['Direction'] = 'N',
+         ['Direction'] = 'N',
             ['Directions'] = {
                 ['N'] = 0,
                 ['E'] = 90,
@@ -121,6 +122,7 @@ getgenv().Depart = {
         }
     }
 }
+
 
 --[[
 
@@ -225,11 +227,11 @@ local localPlayer = playersService.LocalPlayer
 local mouse = localPlayer:GetMouse()
 
 local Whiteowls = Drawing.new("Circle")
-local fovSettings = getgenv().Depart.Fighting.Silent.fovSettings
+local Fov = getgenv().Depart.Silent.Fov
 
-Whiteowls.Thickness = fovSettings.Thickness
-Whiteowls.Color = fovSettings.Color
-Whiteowls.Filled = fovSettings.Filled
+Whiteowls.Thickness = Fov.Thickness
+Whiteowls.Color = Fov.Color
+Whiteowls.Filled = Fov.Filled
 
 local Smokedope2016 = false
 local RR = nil
@@ -238,9 +240,9 @@ local function updateCircles()
     local guiInsetY = game:GetService("GuiService"):GetGuiInset().Y
     local mousePosition = Vector2.new(mouse.X, mouse.Y + guiInsetY)
 
-    if fovSettings.Visible then
+    if Fov.Visible then
         Whiteowls.Visible = true
-        Whiteowls.Radius = fovSettings.FovRadius
+        Whiteowls.Radius = Fov.Radius
         Whiteowls.Position = mousePosition
     else
         Whiteowls.Visible = false
@@ -267,7 +269,7 @@ local function findClosestPlayer()
             local screenPosition, onScreen = camera:WorldToScreenPoint(player.Character.HumanoidRootPart.Position)
             if onScreen then
                 local distance = (Vector2.new(screenPosition.X, screenPosition.Y) - mousePosition).Magnitude
-                if fovSettings.FovRadius > distance and distance < shortestDistance then
+                if Fov.Radius > distance and distance < shortestDistance then
                     closestPlayer, shortestDistance = player, distance
                 end
             end
@@ -283,7 +285,7 @@ local function toggleCamlock(input, processed)
     if input.KeyCode == camlockKey then
         Smokedope2016 = not Smokedope2016
 
-        if Smokedope2016 and getgenv().Depart.Fighting.Aiming.Activate then
+        if Smokedope2016 and getgenv().Depart.Aiming.Activate then
             RR = findClosestPlayer()
         else
             RR = nil
@@ -323,7 +325,7 @@ end
 
 local function handleCamlock()
     if Smokedope2016 and RR and RR.Character and not isDead(RR) then
-        local settings = getgenv().Depart.Fighting.Aiming
+        local settings = getgenv().Depart.Aiming
         local hitPartName = settings.TargetParts
         local targetPart = RR.Character:FindFirstChild(hitPartName)
 
@@ -484,85 +486,6 @@ end
 
 handleMacroSpeedGlitch()
 
-local DotFOV = getgenv().Depart.Fighting.Silent.DotFOV
-
-local RunService = game:GetService('RunService')
-local Players = game:GetService("Players")
-local Client = Players.LocalPlayer
-local Mouse = Client:GetMouse()
-local GuiS = game:GetService("GuiService")
-
-local MainDot = Drawing.new("Circle")
-MainDot.Visible = false
-MainDot.Transparency = 0
-MainDot.Radius = 0.1
-MainDot.Thickness = 0.1
-MainDot.Color = DotFOV.Color
-
-local MainFOV = Drawing.new("Circle")
-MainFOV.Visible = DotFOV.Visible
-MainFOV.Transparency = DotFOV.Transparency
-MainFOV.Radius = DotFOV.Radius
-MainFOV.Thickness = DotFOV.Thickness
-MainFOV.Color = DotFOV.Color
-
-local NumDots = DotFOV.Num_Dots
-local DottedSize = DotFOV.Dotted_Size
-local angleIncrement = 360 / NumDots
-local MiniDots = {}
-
-local function getColorFromRainbow(offset)
-    local r = math.sin(offset * math.pi) * 127 + 128
-    local g = math.sin(offset * math.pi + 2 * math.pi / 3) * 127 + 128
-    local b = math.sin(offset * math.pi + 4 * math.pi / 3) * 127 + 128
-    return Color3.fromRGB(r, g, b)
-end
-
-for i = 1, NumDots do
-    local MiniDot = Drawing.new("Circle")
-    MiniDot.Visible = DotFOV.ShowMiniDot
-    MiniDot.Filled = true
-    MiniDot.Transparency = 1
-    MiniDot.Radius = DottedSize
-    MiniDot.Thickness = 1
-    table.insert(MiniDots, MiniDot)
-end
-
-RunService.Heartbeat:Connect(function()
-    MainFOV.Visible = DotFOV.Visible
-    MainFOV.Transparency = DotFOV.Transparency
-    MainFOV.Radius = DotFOV.Radius
-    MainFOV.Thickness = DotFOV.Thickness
-    MainFOV.Color = DotFOV.Color
-    
-    local guiInsetY = GuiS:GetGuiInset().Y
-    MainDot.Position = Vector2.new(Mouse.X, Mouse.Y + guiInsetY)
-    MainFOV.Position = Vector2.new(Mouse.X, Mouse.Y + guiInsetY)
-    local Radius = DotFOV.Radius
-    
-    for i, miniDot in ipairs(MiniDots) do
-        local angle = math.rad((i - 1) / NumDots * 360)
-        local offsetX = math.cos(angle) * Radius
-        local offsetY = math.sin(angle) * Radius
-        miniDot.Position = MainDot.Position + Vector2.new(offsetX, offsetY)
-        
-        if DotFOV.Rainbow then
-            miniDot.Color = getColorFromRainbow(i / NumDots)
-        else
-            miniDot.Color = DotFOV.Color
-        end
-    end
-end)
-
-spawn(function()
-    while DotFOV.Rainbow do
-        for i = 1, 50 do
-            DotFOV.Num_Dots = i
-            wait(math.random(1, 2) / 100)
-        end
-    end
-end)
-
 -- V #2
 local Inset = game:GetService("GuiService"):GetGuiInset().Y
 local Mouse = game.Players.LocalPlayer:GetMouse()
@@ -571,16 +494,16 @@ local Cam = workspace.CurrentCamera
 local RunService = game:GetService("RunService")
 
 local FOV = Drawing.new("Circle")
-local fovSettings = Depart.Fighting.Silent.fovSettings
+local Fov = Depart.Silent.Fov
 
-FOV.Thickness = fovSettings.Thickness
-FOV.Color = fovSettings.Color
-FOV.Filled = fovSettings.Filled
+FOV.Thickness = Fov.Thickness
+FOV.Color = Fov.Color
+FOV.Filled = Fov.Filled
 
 local function UpdateFOV()
-    if fovSettings.Visible then
+    if Fov.Visible then
         FOV.Position = Vector2.new(Mouse.X, Mouse.Y + Inset)
-        FOV.Radius = fovSettings.FovRadius
+        FOV.Radius = Fov.Radius
         FOV.Visible = true
     else
         FOV.Visible = false
@@ -669,19 +592,19 @@ local function getClosestChar()
 
     for _, v in pairs(game.Players:GetPlayers()) do
         if v.Character and v ~= Client and v.Character:FindFirstChild("HumanoidRootPart") then
-            if Depart.Fighting.Silent.KOcheck and Death(v) then
+            if Depart.Silent.KOcheck and Death(v) then
                 continue
             end
 
             local closestPart, closestPartDistance = nil, math.huge
-            local partsToCheck = Depart.Fighting.Silent.MultipleParts
+            local partsToCheck = Depart.Silent.HitParts
 
             for _, partName in pairs(partsToCheck) do
                 local part = v.Character:FindFirstChild(partName)
                 if part then
                     local partPos = Cam:WorldToScreenPoint(part.Position)
                     local distance = (Vector2.new(partPos.X, partPos.Y) - mousePos).Magnitude
-                    if distance < closestPartDistance and distance < Depart.Fighting.Silent.fovSettings.FovRadius and WallCheck(part.Position, {Client, v.Character}) then
+                    if distance < closestPartDistance and distance < Depart.Silent.Fov.Radius and WallCheck(part.Position, {Client, v.Character}) then
                         closestPartDistance = distance
                         closestPart = part
                     end
@@ -703,10 +626,10 @@ local function connectToolActivation(tool)
         tool.Activated:Connect(function()
             if not debounce then
                 debounce = true
-                if Depart.Fighting.Silent.Activated then
+                if Depart.Silent.Activated then
                     local target = getClosestChar()
                     if target then
-                        local endPoint = target.Part.Position + (target.Part.Velocity * Depart.Fighting.Silent.Prediction)
+                        local endPoint = target.Part.Position + (target.Part.Velocity * Depart.Silent.Prediction)
                         MainEvents():FireServer(getEventName(), endPoint)
                     end
                 end
@@ -735,9 +658,9 @@ local function handleRespawn()
 
     setupToolConnections()
 
-    FOV.Thickness = fovSettings.Thickness
-    FOV.Color = fovSettings.Color
-    FOV.Filled = fovSettings.Filled
+    FOV.Thickness = Fov.Thickness
+    FOV.Color = Fov.Color
+    FOV.Filled = Fov.Filled
 
     RunService.RenderStepped:Connect(function()
         UpdateFOV()
